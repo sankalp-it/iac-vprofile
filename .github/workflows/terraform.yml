@@ -74,6 +74,10 @@ jobs:
         id: plan
         run: terraform plan -no-color -input=false -out planfile
         continue-on-error: true
+      # Generate Infracost JSON file as the baseline.
+      - name: Generate Infracost cost estimate baseline
+        run: |
+          infracost breakdown --path=. 
 
       # Generate Infracost JSON file as the baseline.
       - name: Generate Infracost cost estimate baseline
