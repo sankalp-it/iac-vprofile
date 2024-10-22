@@ -131,4 +131,18 @@ jobs:
       - name: Terraform plan status
         if: steps.plan.outcome == 'fail'
         run: exit 1
+
+      - name: Terraform Apply 
+        id: gitopstf
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply -input=false -parallelism=1 planfile
+
+      - name: Get Kube config file
+        id: getkubeconfig
+        if: steps.gitopstf.outcome == 'sucess'
+        run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER}}
+
+      - name: Install Ingress controller
+        if: steps.gitopstf == 'success' && steps.getkubeconfig.outcome == 'success'
+        run: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
   
